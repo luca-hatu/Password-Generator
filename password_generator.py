@@ -1,21 +1,15 @@
 import random
 import string
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
 
 def get_user_preferences():
-    while True:
-        try:
-            length = int(input("Length ?: "))
-            if length <= 0:
-                print("Password length must be a positive integer.")
-                continue
-            break
-        except ValueError:
-            print("Please enter a valid integer.")
-
-    include_uppercase = input("Include uppercase letters? (yes/no): ").strip().lower() == 'yes'
-    include_lowercase = input("Include lowercase letters? (yes/no): ").strip().lower() == 'yes'
-    include_digits = input("Include digits? (yes/no): ").strip().lower() == 'yes'
-    include_special = input("Include special characters? (yes/no): ").strip().lower() == 'yes'
+    length = length_var.get()
+    include_uppercase = uppercase_var.get()
+    include_lowercase = lowercase_var.get()
+    include_digits = digits_var.get()
+    include_special = special_var.get()
 
     return length, include_uppercase, include_lowercase, include_digits, include_special
 
@@ -49,10 +43,57 @@ def generate_password(length, include_uppercase, include_lowercase, include_digi
     random.shuffle(password)
     return ''.join(password)
 
-if __name__ == "__main__":
-    length, include_uppercase, include_lowercase, include_digits, include_special = get_user_preferences()
+def on_generate_password():
     try:
+        length, include_uppercase, include_lowercase, include_digits, include_special = get_user_preferences()
+        if length <= 0:
+            messagebox.showerror("Error", "Password length must be a positive integer.")
+            return
+
         password = generate_password(length, include_uppercase, include_lowercase, include_digits, include_special)
-        print(f"Generated Password: {password}")
+        result_var.set(password)
     except ValueError as e:
-        print(e)
+        messagebox.showerror("Error", str(e))
+
+root = tk.Tk()
+root.title("Password Generator")
+
+length_var = tk.IntVar()
+uppercase_var = tk.BooleanVar()
+lowercase_var = tk.BooleanVar()
+digits_var = tk.BooleanVar()
+special_var = tk.BooleanVar()
+result_var = tk.StringVar()
+
+style = ttk.Style()
+style.configure('TLabel', font=('Helvetica', 12))
+style.configure('TButton', font=('Helvetica', 12))
+style.configure('TEntry', font=('Helvetica', 12))
+style.configure('TCheckbutton', font=('Helvetica', 12))
+
+mainframe = ttk.Frame(root, padding="10 10 10 10")
+mainframe.grid(column=0, row=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
+
+ttk.Label(mainframe, text="Length:").grid(column=0, row=0, sticky=tk.W)
+length_entry = ttk.Entry(mainframe, textvariable=length_var)
+length_entry.grid(column=1, row=0, sticky=(tk.W, tk.E))
+length_entry.focus()
+
+ttk.Checkbutton(mainframe, text="Include Uppercase", variable=uppercase_var).grid(column=0, row=1, sticky=tk.W)
+ttk.Checkbutton(mainframe, text="Include Lowercase", variable=lowercase_var).grid(column=0, row=2, sticky=tk.W)
+ttk.Checkbutton(mainframe, text="Include Digits", variable=digits_var).grid(column=0, row=3, sticky=tk.W)
+ttk.Checkbutton(mainframe, text="Include Special Characters", variable=special_var).grid(column=0, row=4, sticky=tk.W)
+
+ttk.Button(mainframe, text="Generate Password", command=on_generate_password).grid(column=0, row=5, columnspan=2, pady=10)
+
+ttk.Label(mainframe, text="Generated Password:").grid(column=0, row=6, sticky=tk.W)
+result_entry = ttk.Entry(mainframe, textvariable=result_var, state='readonly')
+result_entry.grid(column=1, row=6, sticky=(tk.W, tk.E))
+
+for child in mainframe.winfo_children(): 
+    child.grid_configure(padx=5, pady=5)
+
+root.mainloop()
